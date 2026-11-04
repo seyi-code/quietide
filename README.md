@@ -4,8 +4,6 @@
 
 A calm, private, offline-first web + native app for better sleep, guided breathing, deep focus, and quick stress resets.
 
-**Name:** Quietide — selected after checking Stillora, Lunara & Quietide. Stillora and Lunara are heavily used by similar wellness apps; Quietide has smaller competing sound apps but the exact GitHub name was free.
-
 ---
 
 ## Quick Start
@@ -28,29 +26,35 @@ Open http://localhost:3000
 - **Stress SOS** – Auto-starts 90-second Box breathing reset
 - **Focus** – Work / break timer with session logging
 - **Sleep** – Timer (15–120 min) + multi-layer soundscape + automatic fade-out in the last 30 s
-- **Sound Mixer** – Brown/pink noise, rain, ocean, forest, wind (Web Audio synthesized, fully offline)
-- **Onboarding** – 3-step first-run intro
-- **Settings** – Total minutes tracked + JSON export of sessions
-- **PWA** – Installable, offline-capable (manifest + service worker)
-- **Capacitor** – iOS/Android ready (haptics on breathe phases)
 
-### Design
-Dark-first calm UI, large touch targets, slow animations, privacy-first (no accounts, no analytics, local storage only).
+### Sound Mixer
+- Independent volume for each layer (Brown / Pink noise, Rain, Ocean, Forest, Wind)
+- Synthesized with Web Audio API (fully offline)
+- Ready for real MP3 drop-in later
 
----
-
-## Architecture
-
-- **Next.js 14** App Router + TypeScript
-- **Tailwind CSS**
-- **Zustand** + persist for sounds, timer, sessions
-- **Web Audio API** – synthesized ambient layers (no large audio assets required)
-- **Capacitor 6** – haptics, splash, status bar
-- **Static export** (`output: "export"`) for Capacitor + easy Vercel deploy
+### Other
+- Sleep timer with fade-out
+- Haptics helper for breathe phases (Capacitor)
+- Onboarding (3 steps)
+- Session history + total minutes
+- JSON export of sessions
+- PWA (manifest + service worker)
+- Capacitor 6 ready (iOS / Android)
 
 ---
 
-## Capacitor (iOS / Android)
+## Stack
+
+- Next.js 14 (App Router) + TypeScript
+- Tailwind CSS
+- Zustand + persist
+- Web Audio API
+- Capacitor 6
+- Static export (`output: "export"`)
+
+---
+
+## Capacitor
 
 ```bash
 npm run build
@@ -64,17 +68,6 @@ App ID: `com.quietide.app`
 
 ---
 
-## Deploy (Vercel)
+## Privacy
 
-1. Connect the GitHub repo
-2. Framework preset: Next.js
-3. Build command: `npm run build`
-4. Output directory: `out` (because of static export)
-
-Or just push — Vercel will detect it.
-
----
-
-## License
-
-Private / personal use for now. Adjust as needed.
+Everything stays on device. No accounts, no analytics, no cloud sync.

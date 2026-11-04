@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        aurelis: {
+        quietide: {
           bg: "#0B0F1A",
           surface: "#141B2D",
           card: "#1A2338",
