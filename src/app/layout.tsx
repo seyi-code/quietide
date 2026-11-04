@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { BottomNav } from "@/components/BottomNav";
 
 export const metadata: Metadata = {
   title: "Quietide — Sleep, Focus & Calm",
@@ -27,14 +29,38 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(){
+                try {
+                  var raw = localStorage.getItem('quietide-storage');
+                  var theme = 'dark';
+                  if (raw) {
+                    var parsed = JSON.parse(raw);
+                    theme = (parsed.state && parsed.state.theme) || 'dark';
+                  }
+                  if (theme === 'system') {
+                    theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+                  }
+                  document.documentElement.classList.remove('dark','light');
+                  document.documentElement.classList.add(theme);
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body className="min-h-screen bg-quietide-bg antialiased">
-        <div className="mx-auto min-h-screen max-w-lg px-4 pb-24 pt-8">
-          {children}
-        </div>
+        <ThemeProvider>
+          <div className="mx-auto min-h-screen max-w-lg px-4 pb-28 pt-8">
+            {children}
+          </div>
+          <BottomNav />
+        </ThemeProvider>
         <script
           dangerouslySetInnerHTML={{
             __html: `
