@@ -22,25 +22,27 @@ function BreatheContent() {
   const [startedAt, setStartedAt] = useState<Date | null>(null);
   const [sosDone, setSosDone] = useState(false);
 
-  useEffect(() => {
-    if (isSos && !isActive && !sosDone) {
-      const t = setTimeout(() => {
-        setIsActive(true);
-        setStartedAt(new Date());
-      }, 600);
-      return () => clearTimeout(t);
-    }
-  }, [isSos, isActive, sosDone]);
-
+  // SOS: do NOT auto-start — user taps Begin when ready.
+  // Once running, auto-end after 90 seconds.
   useEffect(() => {
     if (isSos && isActive && startedAt) {
       const t = setTimeout(() => {
-        stop();
+        setIsActive(false);
+        if (startedAt) {
+          const duration = Math.floor((Date.now() - startedAt.getTime()) / 1000);
+          addSession({
+            mode: "sos",
+            durationSeconds: duration,
+            startedAt: startedAt.toISOString(),
+            completed: true,
+          });
+        }
+        setStartedAt(null);
         setSosDone(true);
       }, 90000);
       return () => clearTimeout(t);
     }
-  }, [isSos, isActive, startedAt]);
+  }, [isSos, isActive, startedAt, addSession]);
 
   const start = () => {
     setIsActive(true);
