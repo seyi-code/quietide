@@ -26,7 +26,7 @@ export function ModeCard({ title, description, href, icon, className }: ModeCard
     <Link
       href={href}
       className={cn(
-        "group relative flex flex-col gap-3 rounded-3xl border border-quietide bg-quietide-card p-6 transition-all hover:border-quietide-primary/40 hover:bg-quietide-surface hover:shadow-xl hover:shadow-quietide-primary/10",
+        "card-elevated group relative flex flex-col gap-3 rounded-3xl border border-quietide bg-quietide-card p-6 transition-all hover:border-quietide-primary/40 hover:bg-quietide-surface hover:shadow-xl hover:shadow-quietide-primary/10",
         className
       )}
     >
