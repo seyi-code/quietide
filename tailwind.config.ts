@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,22 +10,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Resolve to CSS variables so light/dark switch actually works
         quietide: {
-          bg: "#0B0F1A",
-          surface: "#141B2D",
-          card: "#1A2338",
-          primary: "#6B8CFF",
-          secondary: "#8B7CF6",
-          accent: "#A78BFA",
-          muted: "#94A3B8",
-          soft: "#E2E8F0",
+          bg: "rgb(var(--q-bg) / <alpha-value>)",
+          surface: "rgb(var(--q-surface) / <alpha-value>)",
+          card: "rgb(var(--q-card) / <alpha-value>)",
+          primary: "rgb(var(--q-primary) / <alpha-value>)",
+          secondary: "rgb(var(--q-secondary) / <alpha-value>)",
+          accent: "rgb(var(--q-accent) / <alpha-value>)",
+          muted: "rgb(var(--q-muted) / <alpha-value>)",
+          soft: "rgb(var(--q-soft) / <alpha-value>)",
+          border: "rgb(var(--q-border) / <alpha-value>)",
         },
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
       },
       animation: {
-        "breathe": "breathe 8s ease-in-out infinite",
+        breathe: "breathe 8s ease-in-out infinite",
         "pulse-soft": "pulse-soft 3s ease-in-out infinite",
       },
       keyframes: {
