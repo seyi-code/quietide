@@ -20,7 +20,13 @@ interface AppState {
   sleepTimerMinutes: number | null;
   theme: ThemePreference;
   todayMood: Mood;
-  moodDate: string | null;
+  moodDate: string | null; // YYYY-MM-DD
+  /** Soft brown noise under Stress SOS — off by default */
+  sosSoundEnabled: boolean;
+  /** Spoken guided cues via Web Speech API */
+  guidedVoiceEnabled: boolean;
+  /** Light haptics on breathe phase changes */
+  hapticsEnabled: boolean;
 
   setMode: (mode: Mode | null) => void;
   addSession: (session: Omit<SessionRecord, "id">) => void;
@@ -31,6 +37,9 @@ interface AppState {
   setSleepTimer: (minutes: number | null) => void;
   setTheme: (theme: ThemePreference) => void;
   setTodayMood: (mood: Mood) => void;
+  setSosSoundEnabled: (v: boolean) => void;
+  setGuidedVoiceEnabled: (v: boolean) => void;
+  setHapticsEnabled: (v: boolean) => void;
 }
 
 function todayKey() {
@@ -50,10 +59,16 @@ export const useAppStore = create<AppState>()(
       theme: "dark",
       todayMood: null,
       moodDate: null,
+      sosSoundEnabled: false,
+      guidedVoiceEnabled: true,
+      hapticsEnabled: true,
 
       setMode: (mode) => set({ currentMode: mode }),
       setTheme: (theme) => set({ theme }),
       setTodayMood: (mood) => set({ todayMood: mood, moodDate: todayKey() }),
+      setSosSoundEnabled: (v) => set({ sosSoundEnabled: v }),
+      setGuidedVoiceEnabled: (v) => set({ guidedVoiceEnabled: v }),
+      setHapticsEnabled: (v) => set({ hapticsEnabled: v }),
       addSession: (session) =>
         set((state) => ({
           sessions: [
@@ -82,19 +97,24 @@ export const useAppStore = create<AppState>()(
   )
 );
 
+/** Gentle streak: consecutive calendar days with ≥1 completed session */
 export function computeGentleStreak(sessions: SessionRecord[]): number {
   const days = new Set(
-    sessions.filter((s) => s.completed).map((s) => s.startedAt.slice(0, 10))
+    sessions
+      .filter((s) => s.completed)
+      .map((s) => s.startedAt.slice(0, 10))
   );
   if (days.size === 0) return 0;
   let streak = 0;
   const d = new Date();
+  // Allow today or yesterday as the start of a living streak
   for (let i = 0; i < 60; i++) {
     const key = d.toISOString().slice(0, 10);
     if (days.has(key)) {
       streak++;
       d.setDate(d.getDate() - 1);
     } else if (i === 0) {
+      // no session today — check yesterday
       d.setDate(d.getDate() - 1);
     } else {
       break;
