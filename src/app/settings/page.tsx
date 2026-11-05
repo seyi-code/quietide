@@ -25,6 +25,7 @@ const THEME_OPTIONS: { id: ThemePreference; label: string; icon: typeof Moon }[]
 
 export default function SettingsPage() {
   const sessions = useAppStore((s) => s.sessions);
+  const removeSession = useAppStore((s) => s.removeSession);
   const theme = useAppStore((s) => s.theme);
   const setTheme = useAppStore((s) => s.setTheme);
   const focusWorkMinutes = useAppStore((s) => s.focusWorkMinutes);
@@ -260,13 +261,23 @@ export default function SettingsPage() {
             {sessions.slice(0, 15).map((s) => (
               <li
                 key={s.id}
-                className="flex justify-between rounded-xl bg-quietide-card px-4 py-3 text-sm"
+                className="flex items-center gap-3 rounded-xl bg-quietide-card px-4 py-3 text-sm"
               >
-                <span className="capitalize text-quietide-soft">{s.mode}</span>
-                <span className="text-quietide-muted">
-                  {formatDuration(s.durationSeconds)}
-                  {!s.completed && " · stopped"}
-                </span>
+                <div className="min-w-0 flex-1">
+                  <span className="capitalize text-quietide-soft">{s.mode}</span>
+                  <span className="ml-2 text-quietide-muted">
+                    {formatDuration(s.durationSeconds)}
+                    {!s.completed && " · stopped"}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeSession(s.id)}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-quietide-muted transition-colors hover:bg-red-500/15 hover:text-red-300 active:scale-95"
+                  aria-label={`Delete ${s.mode} session`}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
               </li>
             ))}
           </ul>
