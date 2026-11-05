@@ -30,6 +30,7 @@ interface AppState {
 
   setMode: (mode: Mode | null) => void;
   addSession: (session: Omit<SessionRecord, "id">) => void;
+  removeSession: (id: string) => void;
   setPreferredBreathing: (p: BreathingPattern) => void;
   setFocusTimes: (work: number, breakMin: number) => void;
   toggleSound: (id: string) => void;
@@ -75,6 +76,10 @@ export const useAppStore = create<AppState>()(
             { ...session, id: crypto.randomUUID() },
             ...state.sessions,
           ].slice(0, 100),
+        })),
+      removeSession: (id) =>
+        set((state) => ({
+          sessions: state.sessions.filter((s) => s.id !== id),
         })),
       setPreferredBreathing: (p) => set({ preferredBreathing: p }),
       setFocusTimes: (work, breakMin) =>
