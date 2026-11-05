@@ -16,9 +16,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           {
             "bg-quietide-primary text-white hover:bg-quietide-primary/90 shadow-lg shadow-quietide-primary/20":
               variant === "primary",
-            "bg-quietide-card text-quietide-soft border border-white/10 hover:bg-quietide-surface":
+            "bg-quietide-card text-quietide-soft border border-quietide-strong hover:bg-quietide-surface":
               variant === "secondary",
-            "bg-transparent text-quietide-muted hover:text-quietide-soft hover:bg-white/5":
+            "bg-transparent text-quietide-muted hover:text-quietide-soft hover:bg-quietide-border/5":
               variant === "ghost",
             "bg-red-500/20 text-red-300 hover:bg-red-500/30": variant === "danger",
             "h-9 px-4 text-sm": size === "sm",
