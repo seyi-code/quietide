@@ -66,4 +66,20 @@ body {
   .border-quietide-strong {
     border-color: rgb(var(--q-border) / 0.14);
   }
+
+  /* Soft elevation — subtle in dark, clearer in light so white cards don't float flat */
+  .card-elevated {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.12), 0 4px 12px rgb(0 0 0 / 0.08);
+  }
+}
+
+html.light .card-elevated {
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.04),
+    0 4px 16px rgb(15 23 42 / 0.06),
+    0 0 0 1px rgb(15 23 42 / 0.04);
+}
+
+html.dark .card-elevated {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 8px 24px rgb(0 0 0 / 0.15);
 }
