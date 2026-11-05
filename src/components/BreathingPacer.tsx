@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { BreathingPattern } from "@/lib/types";
+import { hapticLight } from "@/lib/haptics";
+import { useAppStore } from "@/store/useAppStore";
 
 interface BreathingPacerProps {
   pattern: BreathingPattern;
@@ -23,25 +25,44 @@ export function BreathingPacer({ pattern, isActive, className }: BreathingPacerP
   const [phase, setPhase] = useState<"inhale" | "hold1" | "exhale" | "hold2">("inhale");
   const [scale, setScale] = useState(1);
   const config = patterns[pattern];
+  const hapticsEnabled = useAppStore((s) => s.hapticsEnabled);
+  const lastPhase = useRef<string>("");
+
+  // Soft haptic on inhale / exhale transitions
+  useEffect(() => {
+    if (!isActive || !hapticsEnabled) return;
+    if (phase === lastPhase.current) return;
+    lastPhase.current = phase;
+    if (phase === "inhale" || phase === "exhale") {
+      hapticLight();
+    }
+  }, [phase, isActive, hapticsEnabled]);
 
   useEffect(() => {
     if (!isActive) {
       setPhase("inhale");
       setScale(1);
+      lastPhase.current = "";
       return;
     }
 
-    let timeout: NodeJS.Timeout;
+    let timeout: ReturnType<typeof setTimeout>;
+    let cancelled = false;
+
     const cycle = () => {
+      if (cancelled) return;
       setPhase("inhale");
       setScale(1.25);
       timeout = setTimeout(() => {
+        if (cancelled) return;
         if (config.hold1 > 0) {
           setPhase("hold1");
           timeout = setTimeout(() => {
+            if (cancelled) return;
             setPhase("exhale");
             setScale(1);
             timeout = setTimeout(() => {
+              if (cancelled) return;
               if (config.hold2 > 0) {
                 setPhase("hold2");
                 timeout = setTimeout(cycle, config.hold2 * 1000);
@@ -59,7 +80,10 @@ export function BreathingPacer({ pattern, isActive, className }: BreathingPacerP
     };
 
     cycle();
-    return () => clearTimeout(timeout);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, [isActive, pattern, config]);
 
   const phaseLabel =
@@ -80,7 +104,7 @@ export function BreathingPacer({ pattern, isActive, className }: BreathingPacerP
           style={{ transform: `scale(${scale})` }}
         />
         <div
-          className="relative z-10 flex h-40 w-40 items-center justify-center rounded-full border border-white/10 bg-quietide-surface/80 backdrop-blur-sm transition-transform duration-[4000ms] ease-in-out"
+          className="relative z-10 flex h-40 w-40 items-center justify-center rounded-full border border-quietide-strong bg-quietide-surface/80 backdrop-blur-sm transition-transform duration-[4000ms] ease-in-out"
           style={{ transform: `scale(${scale * 0.95})` }}
         >
           <span className="text-2xl font-medium text-quietide-soft">{phaseLabel}</span>
