@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { Moon, Wind, Target } from "lucide-react";
+import { Moon, Wind, Target, AlertCircle } from "lucide-react";
 
 const STEPS = [
   {
@@ -24,8 +25,42 @@ const STEPS = [
 
 export function Onboarding({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState(0);
+  const [showSosOffer, setShowSosOffer] = useState(false);
   const current = STEPS[step];
   const Icon = current.icon;
+
+  if (showSosOffer) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-quietide-bg px-6">
+        <div className="w-full max-w-sm space-y-8 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-quietide-primary/15 text-quietide-primary">
+            <AlertCircle className="h-8 w-8" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-semibold text-quietide-soft">
+              Try a 90-second reset?
+            </h2>
+            <p className="text-quietide-muted">
+              Stress SOS is a short box-breathing session. No sound unless you want it.
+              You can always find it on the home screen.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/breathe?sos=1"
+              onClick={onDone}
+              className="inline-flex h-14 items-center justify-center rounded-2xl bg-quietide-primary px-8 text-lg font-medium text-white shadow-lg shadow-quietide-primary/20"
+            >
+              Try Stress SOS
+            </Link>
+            <Button size="lg" variant="ghost" onClick={onDone}>
+              Maybe later
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-quietide-bg px-6">
@@ -42,7 +77,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             <div
               key={i}
               className={`h-1.5 w-6 rounded-full transition-colors ${
-                i === step ? "bg-quietide-primary" : "bg-white/10"
+                i === step ? "bg-quietide-primary" : "bg-quietide-border/10"
               }`}
             />
           ))}
@@ -53,7 +88,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
               Next
             </Button>
           ) : (
-            <Button size="lg" onClick={onDone}>
+            <Button size="lg" onClick={() => setShowSosOffer(true)}>
               Get started
             </Button>
           )}
