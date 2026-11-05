@@ -21,12 +21,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const root = document.documentElement;
     root.classList.remove("dark", "light");
     root.classList.add(applied);
+
+    // Update theme-color meta for mobile browser chrome
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
       meta.setAttribute("content", applied === "dark" ? "#0B0F1A" : "#F4F6FB");
     }
   }, [theme]);
 
+  // Follow OS changes when preference is "system"
   useEffect(() => {
     if (theme !== "system") return;
     const mq = window.matchMedia("(prefers-color-scheme: light)");
@@ -34,6 +37,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const applied = resolveTheme("system");
       document.documentElement.classList.remove("dark", "light");
       document.documentElement.classList.add(applied);
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) {
+        meta.setAttribute("content", applied === "dark" ? "#0B0F1A" : "#F4F6FB");
+      }
     };
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
