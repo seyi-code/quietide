@@ -11,6 +11,7 @@ import { audioEngine } from "@/lib/audioEngine";
 import { ArrowLeft, Moon } from "lucide-react";
 
 const TIMER_OPTIONS = [15, 30, 45, 60, 90, 120];
+const FADE_SECONDS = 30;
 
 export default function SleepPage() {
   const sleepTimerMinutes = useAppStore((s) => s.sleepTimerMinutes);
@@ -25,15 +26,17 @@ export default function SleepPage() {
   const [startedAt, setStartedAt] = useState<Date | null>(null);
   const fadeTriggered = useRef(false);
   const activeCount = sounds.filter((s) => s.active).length;
+  const isFading = isRunning && secondsLeft <= FADE_SECONDS && secondsLeft > 0;
+  const fadeProgress = isFading ? 1 - secondsLeft / FADE_SECONDS : 0;
 
   useEffect(() => {
     if (sleepTimerMinutes) setDuration(sleepTimerMinutes * 60);
   }, [sleepTimerMinutes, setDuration]);
 
   useEffect(() => {
-    if (isRunning && secondsLeft <= 30 && secondsLeft > 0 && !fadeTriggered.current) {
+    if (isRunning && secondsLeft <= FADE_SECONDS && secondsLeft > 0 && !fadeTriggered.current) {
       fadeTriggered.current = true;
-      audioEngine.fadeOut(28);
+      audioEngine.fadeOut(FADE_SECONDS - 2);
     }
   }, [isRunning, secondsLeft]);
 
@@ -88,22 +91,35 @@ export default function SleepPage() {
         <h1 className="text-2xl font-semibold text-quietide-soft">Sleep</h1>
       </div>
 
-      <div className="flex flex-col items-center gap-4 rounded-3xl border border-white/5 bg-quietide-card p-8">
+      <div className="card-elevated flex flex-col items-center gap-4 rounded-3xl border border-quietide bg-quietide-card p-8">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-quietide-primary/10 text-quietide-primary">
           <Moon className="h-7 w-7" />
         </div>
         <div className="text-5xl font-light tabular-nums text-quietide-soft">
           {sleepTimerMinutes ? formatTime(secondsLeft) : "--:--"}
         </div>
-        <p className="text-sm text-quietide-muted text-center">
-          {isRunning && secondsLeft <= 30
-            ? "Gently fading out…"
-            : isRunning
-            ? "Rest well"
-            : activeCount > 0
-            ? `${activeCount} sound layer${activeCount > 1 ? "s" : ""} ready`
-            : "Choose sounds & a timer"}
-        </p>
+
+        {isFading ? (
+          <div className="w-full max-w-xs space-y-2">
+            <p className="text-center text-sm text-quietide-primary">
+              Gently fading out… {secondsLeft}s
+            </p>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-quietide-border/10">
+              <div
+                className="h-full rounded-full bg-quietide-primary transition-all duration-300 ease-linear"
+                style={{ width: `${fadeProgress * 100}%` }}
+              />
+            </div>
+          </div>
+        ) : (
+          <p className="text-center text-sm text-quietide-muted">
+            {isRunning
+              ? "Rest well"
+              : activeCount > 0
+              ? `${activeCount} sound layer${activeCount > 1 ? "s" : ""} ready`
+              : "Choose sounds & a timer"}
+          </p>
+        )}
 
         <div className="flex flex-wrap justify-center gap-2">
           {TIMER_OPTIONS.map((m) => (
@@ -114,10 +130,11 @@ export default function SleepPage() {
                 reset(m * 60);
                 fadeTriggered.current = false;
               }}
+              disabled={isRunning}
               className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
                 sleepTimerMinutes === m
                   ? "bg-quietide-primary text-white"
-                  : "bg-white/5 text-quietide-muted hover:text-quietide-soft"
+                  : "bg-quietide-border/5 text-quietide-muted hover:text-quietide-soft"
               }`}
             >
               {m}m
