@@ -15,6 +15,7 @@ import {
 import { useAppStore, computeGentleStreak } from "@/store/useAppStore";
 import type { ThemePreference } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
+import { formatDuration } from "@/lib/utils";
 
 const THEME_OPTIONS: { id: ThemePreference; label: string; icon: typeof Moon }[] = [
   { id: "dark", label: "Dark", icon: Moon },
@@ -263,7 +264,7 @@ export default function SettingsPage() {
               >
                 <span className="capitalize text-quietide-soft">{s.mode}</span>
                 <span className="text-quietide-muted">
-                  {Math.round(s.durationSeconds / 60)} min
+                  {formatDuration(s.durationSeconds)}
                   {!s.completed && " · stopped"}
                 </span>
               </li>
