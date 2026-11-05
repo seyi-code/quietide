@@ -2,33 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #0B0F1A;
-  --foreground: #E2E8F0;
+/* Channel values (no #) so Tailwind opacity modifiers work */
+:root,
+html.dark {
+  --q-bg: 11 15 26;
+  --q-surface: 20 27 45;
+  --q-card: 26 35 56;
+  --q-primary: 107 140 255;
+  --q-secondary: 139 124 246;
+  --q-accent: 167 139 250;
+  --q-muted: 148 163 184;
+  --q-soft: 226 232 240;
+  --q-border: 255 255 255;
+  --color-scheme: dark;
+}
+
+html.light {
+  --q-bg: 244 246 251;
+  --q-surface: 255 255 255;
+  --q-card: 255 255 255;
+  --q-primary: 79 110 247;
+  --q-secondary: 124 109 240;
+  --q-accent: 139 92 246;
+  --q-muted: 100 116 139;
+  --q-soft: 15 23 42;
+  --q-border: 15 23 42;
+  --color-scheme: light;
+}
+
+html {
+  color-scheme: var(--color-scheme);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: rgb(var(--q-soft));
+  background-color: rgb(var(--q-bg));
   font-family: Inter, system-ui, -apple-system, sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Soft scrollbar for dark theme */
 ::-webkit-scrollbar {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B0F1A;
+  background: rgb(var(--q-bg));
 }
 ::-webkit-scrollbar-thumb {
-  background: #1A2338;
+  background: rgb(var(--q-card));
   border-radius: 3px;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Theme-aware border helpers (replace border-white/5 etc.) */
+  .border-quietide {
+    border-color: rgb(var(--q-border) / 0.08);
+  }
+  .border-quietide-strong {
+    border-color: rgb(var(--q-border) / 0.14);
   }
 }
