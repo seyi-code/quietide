@@ -7,7 +7,8 @@ import { BreathingPacer } from "@/components/BreathingPacer";
 import { Button } from "@/components/ui/Button";
 import { useAppStore } from "@/store/useAppStore";
 import type { BreathingPattern } from "@/lib/types";
-import { ArrowLeft } from "lucide-react";
+import { audioEngine } from "@/lib/audioEngine";
+import { ArrowLeft, Volume2, VolumeX } from "lucide-react";
 
 function BreatheContent() {
   const searchParams = useSearchParams();
@@ -16,18 +17,29 @@ function BreatheContent() {
   const preferred = useAppStore((s) => s.preferredBreathing);
   const setPreferred = useAppStore((s) => s.setPreferredBreathing);
   const addSession = useAppStore((s) => s.addSession);
+  const sosSoundEnabled = useAppStore((s) => s.sosSoundEnabled);
+  const setSosSoundEnabled = useAppStore((s) => s.setSosSoundEnabled);
 
   const [pattern, setPattern] = useState<BreathingPattern>(isSos ? "box" : preferred);
   const [isActive, setIsActive] = useState(false);
   const [startedAt, setStartedAt] = useState<Date | null>(null);
   const [sosDone, setSosDone] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(90);
 
-  // SOS: do NOT auto-start — user taps Begin when ready.
-  // Once running, auto-end after 90 seconds.
+  useEffect(() => {
+    if (!isSos || !isActive || !startedAt) return;
+    const tick = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startedAt.getTime()) / 1000);
+      setSecondsLeft(Math.max(0, 90 - elapsed));
+    }, 250);
+    return () => clearInterval(tick);
+  }, [isSos, isActive, startedAt]);
+
   useEffect(() => {
     if (isSos && isActive && startedAt) {
       const t = setTimeout(() => {
         setIsActive(false);
+        if (sosSoundEnabled) audioEngine.stopAll();
         if (startedAt) {
           const duration = Math.floor((Date.now() - startedAt.getTime()) / 1000);
           addSession({
@@ -39,19 +51,31 @@ function BreatheContent() {
         }
         setStartedAt(null);
         setSosDone(true);
+        setSecondsLeft(90);
       }, 90000);
       return () => clearTimeout(t);
     }
-  }, [isSos, isActive, startedAt, addSession]);
+  }, [isSos, isActive, startedAt, addSession, sosSoundEnabled]);
+
+  useEffect(() => {
+    if (!isSos) return;
+    if (isActive && sosSoundEnabled) {
+      audioEngine.setLayer("brown", true, 0.22);
+    } else if (!isActive) {
+      if (sosSoundEnabled) audioEngine.setLayer("brown", false, 0);
+    }
+  }, [isSos, isActive, sosSoundEnabled]);
 
   const start = () => {
     setIsActive(true);
     setStartedAt(new Date());
     setSosDone(false);
+    setSecondsLeft(90);
   };
 
   const stop = () => {
     setIsActive(false);
+    if (isSos && sosSoundEnabled) audioEngine.setLayer("brown", false, 0);
     if (startedAt) {
       const duration = Math.floor((Date.now() - startedAt.getTime()) / 1000);
       addSession({
@@ -62,6 +86,7 @@ function BreatheContent() {
       });
     }
     setStartedAt(null);
+    setSecondsLeft(90);
   };
 
   return (
@@ -82,6 +107,8 @@ function BreatheContent() {
         <p className="rounded-2xl border border-quietide-primary/20 bg-quietide-primary/5 px-4 py-3 text-sm text-quietide-soft">
           {sosDone
             ? "Well done. You just gave your nervous system a short reset."
+            : isActive
+            ? `Follow the circle. ${secondsLeft}s remaining.`
             : "Follow the circle. Inhale, hold, exhale. Just 90 seconds."}
         </p>
       )}
@@ -107,6 +134,20 @@ function BreatheContent() {
             </button>
           ))}
         </div>
+      )}
+
+      {isSos && (
+        <button
+          onClick={() => setSosSoundEnabled(!sosSoundEnabled)}
+          className="mx-auto flex items-center gap-2 rounded-full border border-quietide bg-quietide-card px-4 py-2 text-sm text-quietide-muted transition-colors hover:text-quietide-soft"
+        >
+          {sosSoundEnabled ? (
+            <Volume2 className="h-4 w-4 text-quietide-primary" />
+          ) : (
+            <VolumeX className="h-4 w-4" />
+          )}
+          {sosSoundEnabled ? "Soft sound on" : "Soft sound off"}
+        </button>
       )}
 
       <div className="flex justify-center gap-4">
