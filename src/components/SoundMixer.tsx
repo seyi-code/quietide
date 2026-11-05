@@ -11,11 +11,19 @@ export function SoundMixer() {
   const toggleSound = useAppStore((s) => s.toggleSound);
   const setSoundVolume = useAppStore((s) => s.setSoundVolume);
 
+  // Keep audio engine in sync with store
   useEffect(() => {
     sounds.forEach((s) => {
       audioEngine.setLayer(s.id as any, s.active, s.volume);
     });
   }, [sounds]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // leave audio running if user navigates – only stop on explicit fade
+    };
+  }, []);
 
   return (
     <div className="space-y-3">
@@ -53,7 +61,7 @@ function SoundRow({
   return (
     <li
       className={cn(
-        "flex items-center gap-3 rounded-2xl border border-white/5 bg-quietide-card px-4 py-3 transition-all",
+        "flex items-center gap-3 rounded-2xl border border-quietide bg-quietide-card px-4 py-3 transition-all",
         sound.active && "border-quietide-primary/30 bg-quietide-surface shadow-sm shadow-quietide-primary/10"
       )}
     >
@@ -63,7 +71,7 @@ function SoundRow({
           "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg transition-all active:scale-95",
           sound.active
             ? "bg-quietide-primary/20 text-quietide-primary"
-            : "bg-white/5 text-quietide-muted hover:bg-white/10"
+            : "bg-quietide-border/5 text-quietide-muted hover:bg-quietide-border/10"
         )}
         aria-label={`Toggle ${sound.name}`}
         aria-pressed={sound.active}
@@ -84,7 +92,7 @@ function SoundRow({
           step={0.01}
           value={sound.volume}
           onChange={(e) => onVolume(parseFloat(e.target.value))}
-          className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-quietide-primary disabled:opacity-40"
+          className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-quietide-border/10 accent-quietide-primary disabled:opacity-40"
           disabled={!sound.active}
           aria-label={`${sound.name} volume`}
         />
