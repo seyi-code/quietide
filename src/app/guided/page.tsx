@@ -90,6 +90,7 @@ function GuidedPlayer({
   const [startedAt, setStartedAt] = useState<Date | null>(null);
   const elapsed = totalSec - secondsLeft;
   const lastSpokenAt = useRef<number>(-1);
+  const loggedRef = useRef(false);
 
   const cue = useMemo(() => {
     let current = session.cues[0]?.text ?? "";
@@ -114,17 +115,17 @@ function GuidedPlayer({
   }, [elapsed, isRunning, isFinished, session.cues, guidedVoiceEnabled]);
 
   useEffect(() => {
-    if (isFinished) {
+    if (isFinished && startedAt && !loggedRef.current) {
+      loggedRef.current = true;
       stopSpeaking();
-      if (startedAt) {
-        addSession({
-          mode: "guided",
-          durationSeconds: totalSec,
-          startedAt: startedAt.toISOString(),
-          completed: true,
-          guidedId: session.id,
-        });
-      }
+      addSession({
+        mode: "guided",
+        durationSeconds: totalSec,
+        startedAt: startedAt.toISOString(),
+        completed: true,
+        guidedId: session.id,
+      });
+      setStartedAt(null);
     }
   }, [isFinished, startedAt, addSession, totalSec, session.id]);
 
@@ -133,6 +134,7 @@ function GuidedPlayer({
   }, []);
 
   const handleStart = () => {
+    loggedRef.current = false;
     setStartedAt(new Date());
     lastSpokenAt.current = -1;
     start();
@@ -146,15 +148,18 @@ function GuidedPlayer({
   const handleEnd = () => {
     stopSpeaking();
     pause();
-    if (startedAt) {
+    if (startedAt && !loggedRef.current) {
+      loggedRef.current = true;
       const dur = Math.floor((Date.now() - startedAt.getTime()) / 1000);
-      addSession({
-        mode: "guided",
-        durationSeconds: dur,
-        startedAt: startedAt.toISOString(),
-        completed: isFinished,
-        guidedId: session.id,
-      });
+      if (dur >= 5) {
+        addSession({
+          mode: "guided",
+          durationSeconds: dur,
+          startedAt: startedAt.toISOString(),
+          completed: isFinished,
+          guidedId: session.id,
+        });
+      }
     }
     reset(totalSec);
     setStartedAt(null);
