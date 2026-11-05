@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { BreathingPacer } from "@/components/BreathingPacer";
@@ -25,6 +25,7 @@ function BreatheContent() {
   const [startedAt, setStartedAt] = useState<Date | null>(null);
   const [sosDone, setSosDone] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(90);
+  const loggedRef = useRef(false);
 
   useEffect(() => {
     if (!isSos || !isActive || !startedAt) return;
@@ -39,8 +40,9 @@ function BreatheContent() {
     if (isSos && isActive && startedAt) {
       const t = setTimeout(() => {
         setIsActive(false);
-        if (sosSoundEnabled) audioEngine.stopAll();
-        if (startedAt) {
+        if (sosSoundEnabled) audioEngine.setLayer("brown", false, 0);
+        if (startedAt && !loggedRef.current) {
+          loggedRef.current = true;
           const duration = Math.floor((Date.now() - startedAt.getTime()) / 1000);
           addSession({
             mode: "sos",
@@ -61,12 +63,13 @@ function BreatheContent() {
     if (!isSos) return;
     if (isActive && sosSoundEnabled) {
       audioEngine.setLayer("brown", true, 0.22);
-    } else if (!isActive) {
-      if (sosSoundEnabled) audioEngine.setLayer("brown", false, 0);
+    } else if (!isActive && sosSoundEnabled) {
+      audioEngine.setLayer("brown", false, 0);
     }
   }, [isSos, isActive, sosSoundEnabled]);
 
   const start = () => {
+    loggedRef.current = false;
     setIsActive(true);
     setStartedAt(new Date());
     setSosDone(false);
@@ -76,14 +79,17 @@ function BreatheContent() {
   const stop = () => {
     setIsActive(false);
     if (isSos && sosSoundEnabled) audioEngine.setLayer("brown", false, 0);
-    if (startedAt) {
+    if (startedAt && !loggedRef.current) {
+      loggedRef.current = true;
       const duration = Math.floor((Date.now() - startedAt.getTime()) / 1000);
-      addSession({
-        mode: isSos ? "sos" : "relax",
-        durationSeconds: duration,
-        startedAt: startedAt.toISOString(),
-        completed: true,
-      });
+      if (duration >= 5) {
+        addSession({
+          mode: isSos ? "sos" : "relax",
+          durationSeconds: duration,
+          startedAt: startedAt.toISOString(),
+          completed: true,
+        });
+      }
     }
     setStartedAt(null);
     setSecondsLeft(90);
