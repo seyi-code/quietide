@@ -1,5 +1,5 @@
 /* Quietide service worker — bump CACHE_NAME on every meaningful release */
-const CACHE_NAME = "quietide-v4";
+const CACHE_NAME = "quietide-v5";
 const PRECACHE = [
   "/",
   "/breathe/",
