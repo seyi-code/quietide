@@ -3,16 +3,14 @@
   "name": "Quietide",
   "short_name": "Quietide",
   "description": "Sleep deeper. Focus longer. Let stress leave. Private offline-first calm.",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "browser"],
   "background_color": "#0B0F1A",
   "theme_color": "#0B0F1A",
   "orientation": "portrait-primary",
-  "categories": ["health", "lifestyle", "productivity"],
   "lang": "en",
-  "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-192.png",
