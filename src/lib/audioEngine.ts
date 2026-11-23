@@ -17,13 +17,17 @@ class AudioEngine {
   private masterGain: GainNode | null = null;
   private layers: Partial<Record<LayerId, LayerNodes>> = {};
   private fadeInterval: number | null = null;
+  private allowBackground = false;
+  private visibilityBound = false;
 
   private ensureContext() {
     if (!this.ctx) {
-      this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      this.ctx = new (window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
       this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.value = 0.7;
+      this.masterGain.gain.value = 0.65;
       this.masterGain.connect(this.ctx.destination);
+      this.bindVisibility();
     }
     if (this.ctx.state === "suspended") {
       this.ctx.resume();
@@ -31,9 +35,34 @@ class AudioEngine {
     return this.ctx;
   }
 
+  private bindVisibility() {
+    if (this.visibilityBound || typeof document === "undefined") return;
+    this.visibilityBound = true;
+    document.addEventListener("visibilitychange", () => {
+      if (!this.ctx) return;
+      if (document.hidden) {
+        if (!this.allowBackground && this.ctx.state === "running") {
+          this.ctx.suspend().catch(() => {});
+        }
+      } else if (this.ctx.state === "suspended") {
+        this.ctx.resume().catch(() => {});
+      }
+    });
+  }
+
+  setAllowBackground(allow: boolean) {
+    this.allowBackground = allow;
+    if (!allow && this.ctx && document.hidden && this.ctx.state === "running") {
+      this.ctx.suspend().catch(() => {});
+    }
+    if (allow && this.ctx && this.ctx.state === "suspended") {
+      this.ctx.resume().catch(() => {});
+    }
+  }
+
   private createNoiseBuffer(type: "brown" | "white" | "pink" = "brown"): AudioBuffer {
     const ctx = this.ensureContext();
-    const bufferSize = ctx.sampleRate * 4;
+    const bufferSize = ctx.sampleRate * 8;
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
 
@@ -79,7 +108,11 @@ class AudioEngine {
         const noise = ctx.createBufferSource();
         noise.buffer = buffer;
         noise.loop = true;
-        noise.connect(gain);
+        const filter = ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.value = 400;
+        noise.connect(filter);
+        filter.connect(gain);
         source = noise;
         break;
       }
@@ -111,6 +144,20 @@ class AudioEngine {
         source = noise;
         break;
       }
+      case "wind": {
+        const buffer = this.createNoiseBuffer("pink");
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+        noise.loop = true;
+        const filter = ctx.createBiquadFilter();
+        filter.type = "bandpass";
+        filter.frequency.value = 500;
+        filter.Q.value = 0.5;
+        noise.connect(filter);
+        filter.connect(gain);
+        source = noise;
+        break;
+      }
       case "forest": {
         const buffer = this.createNoiseBuffer("pink");
         const noise = ctx.createBufferSource();
@@ -123,23 +170,10 @@ class AudioEngine {
         tone.type = "sine";
         tone.frequency.value = 220;
         const toneGain = ctx.createGain();
-        toneGain.gain.value = 0.03;
+        toneGain.gain.value = 0.025;
         tone.connect(toneGain);
         toneGain.connect(gain);
         tone.start();
-        noise.connect(filter);
-        filter.connect(gain);
-        source = noise;
-        break;
-      }
-      case "wind": {
-        const buffer = this.createNoiseBuffer("pink");
-        const noise = ctx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-        const filter = ctx.createBiquadFilter();
-        filter.type = "lowpass";
-        filter.frequency.value = 400;
         noise.connect(filter);
         filter.connect(gain);
         source = noise;
@@ -187,11 +221,10 @@ class AudioEngine {
 
   stopAll() {
     Object.values(this.layers).forEach((layer) => {
-      if (layer) {
-        layer.gain.gain.value = 0;
-      }
+      if (layer) layer.gain.gain.value = 0;
     });
-    if (this.masterGain) this.masterGain.gain.value = 0.7;
+    if (this.masterGain) this.masterGain.gain.value = 0.65;
+    this.allowBackground = false;
   }
 
   setMasterVolume(v: number) {
