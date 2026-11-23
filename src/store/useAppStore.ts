@@ -7,8 +7,9 @@ import type {
   SoundLayer,
   Mood,
   ThemePreference,
+  SoundPreset,
 } from "@/lib/types";
-import { DEFAULT_SOUNDS } from "@/lib/types";
+import { DEFAULT_SOUNDS, SOUND_PRESETS } from "@/lib/types";
 
 interface AppState {
   currentMode: Mode | null;
@@ -20,13 +21,14 @@ interface AppState {
   sleepTimerMinutes: number | null;
   theme: ThemePreference;
   todayMood: Mood;
-  moodDate: string | null; // YYYY-MM-DD
-  /** Soft brown noise under Stress SOS — off by default */
+  moodDate: string | null;
   sosSoundEnabled: boolean;
-  /** Spoken guided cues via Web Speech API */
   guidedVoiceEnabled: boolean;
-  /** Light haptics on breathe phase changes */
   hapticsEnabled: boolean;
+  focusSoundEnabled: boolean;
+  focusChimeEnabled: boolean;
+  favoriteGuidedId: string | null;
+  lastPresetId: string | null;
 
   setMode: (mode: Mode | null) => void;
   addSession: (session: Omit<SessionRecord, "id">) => void;
@@ -35,12 +37,16 @@ interface AppState {
   setFocusTimes: (work: number, breakMin: number) => void;
   toggleSound: (id: string) => void;
   setSoundVolume: (id: string, volume: number) => void;
+  applyPreset: (preset: SoundPreset) => void;
   setSleepTimer: (minutes: number | null) => void;
   setTheme: (theme: ThemePreference) => void;
   setTodayMood: (mood: Mood) => void;
   setSosSoundEnabled: (v: boolean) => void;
   setGuidedVoiceEnabled: (v: boolean) => void;
   setHapticsEnabled: (v: boolean) => void;
+  setFocusSoundEnabled: (v: boolean) => void;
+  setFocusChimeEnabled: (v: boolean) => void;
+  setFavoriteGuidedId: (id: string | null) => void;
 }
 
 function todayKey() {
@@ -63,6 +69,10 @@ export const useAppStore = create<AppState>()(
       sosSoundEnabled: false,
       guidedVoiceEnabled: true,
       hapticsEnabled: true,
+      focusSoundEnabled: true,
+      focusChimeEnabled: true,
+      favoriteGuidedId: null,
+      lastPresetId: null,
 
       setMode: (mode) => set({ currentMode: mode }),
       setTheme: (theme) => set({ theme }),
@@ -70,6 +80,9 @@ export const useAppStore = create<AppState>()(
       setSosSoundEnabled: (v) => set({ sosSoundEnabled: v }),
       setGuidedVoiceEnabled: (v) => set({ guidedVoiceEnabled: v }),
       setHapticsEnabled: (v) => set({ hapticsEnabled: v }),
+      setFocusSoundEnabled: (v) => set({ focusSoundEnabled: v }),
+      setFocusChimeEnabled: (v) => set({ focusChimeEnabled: v }),
+      setFavoriteGuidedId: (id) => set({ favoriteGuidedId: id }),
       addSession: (session) =>
         set((state) => ({
           sessions: [
@@ -96,13 +109,23 @@ export const useAppStore = create<AppState>()(
             s.id === id ? { ...s, volume: Math.max(0, Math.min(1, volume)) } : s
           ),
         })),
+      applyPreset: (preset) =>
+        set((state) => ({
+          lastPresetId: preset.id,
+          sounds: state.sounds.map((s) => {
+            const vol = preset.layers[s.id];
+            if (vol !== undefined) {
+              return { ...s, active: true, volume: vol };
+            }
+            return { ...s, active: false };
+          }),
+        })),
       setSleepTimer: (minutes) => set({ sleepTimerMinutes: minutes }),
     }),
     { name: "quietide-storage" }
   )
 );
 
-/** Gentle streak: consecutive calendar days with ≥1 completed session */
 export function computeGentleStreak(sessions: SessionRecord[]): number {
   const days = new Set(
     sessions
@@ -112,14 +135,12 @@ export function computeGentleStreak(sessions: SessionRecord[]): number {
   if (days.size === 0) return 0;
   let streak = 0;
   const d = new Date();
-  // Allow today or yesterday as the start of a living streak
   for (let i = 0; i < 60; i++) {
     const key = d.toISOString().slice(0, 10);
     if (days.has(key)) {
       streak++;
       d.setDate(d.getDate() - 1);
     } else if (i === 0) {
-      // no session today — check yesterday
       d.setDate(d.getDate() - 1);
     } else {
       break;
@@ -127,3 +148,5 @@ export function computeGentleStreak(sessions: SessionRecord[]): number {
   }
   return streak;
 }
+
+export { SOUND_PRESETS };
