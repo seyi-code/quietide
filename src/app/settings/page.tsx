@@ -11,9 +11,11 @@ import {
   Monitor,
   Volume2,
   Vibrate,
+  RefreshCw,
 } from "lucide-react";
 import { useAppStore, computeGentleStreak } from "@/store/useAppStore";
 import type { ThemePreference } from "@/lib/types";
+import { APP_VERSION } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 import { formatDuration } from "@/lib/utils";
 
@@ -39,8 +41,13 @@ export default function SettingsPage() {
   const setGuidedVoiceEnabled = useAppStore((s) => s.setGuidedVoiceEnabled);
   const hapticsEnabled = useAppStore((s) => s.hapticsEnabled);
   const setHapticsEnabled = useAppStore((s) => s.setHapticsEnabled);
+  const focusSoundEnabled = useAppStore((s) => s.focusSoundEnabled);
+  const setFocusSoundEnabled = useAppStore((s) => s.setFocusSoundEnabled);
+  const focusChimeEnabled = useAppStore((s) => s.focusChimeEnabled);
+  const setFocusChimeEnabled = useAppStore((s) => s.setFocusChimeEnabled);
 
   const [confirmClear, setConfirmClear] = useState(false);
+  const [cacheMsg, setCacheMsg] = useState<string | null>(null);
 
   const clear = () => {
     useAppStore.setState({ sessions: [] });
@@ -56,11 +63,10 @@ export default function SettingsPage() {
     const data = {
       exportedAt: new Date().toISOString(),
       app: "Quietide",
+      version: APP_VERSION,
       sessions,
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -69,22 +75,39 @@ export default function SettingsPage() {
     URL.revokeObjectURL(url);
   };
 
+  const clearServiceWorkerCaches = async () => {
+    try {
+      if ("serviceWorker" in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        reg?.active?.postMessage("CLEAR_CACHES");
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+        setCacheMsg("Caches cleared. Reload to fetch the latest build.");
+      } else {
+        setCacheMsg("Service worker not available in this browser.");
+      }
+    } catch {
+      setCacheMsg("Could not clear caches.");
+    }
+  };
+
+  const resetOnboarding = () => {
+    localStorage.removeItem("quietide-onboarded");
+    localStorage.removeItem("quietide-install-tip");
+    setCacheMsg("Onboarding will show on next home visit.");
+  };
+
   return (
     <main className="flex flex-col gap-8">
       <div className="flex items-center gap-3">
-        <Link
-          href="/"
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-quietide-card text-quietide-muted hover:text-quietide-soft"
-        >
+        <Link href="/" className="flex h-11 w-11 items-center justify-center rounded-full bg-quietide-card text-quietide-muted hover:text-quietide-soft">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="text-2xl font-semibold text-quietide-soft">Settings</h1>
       </div>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-medium uppercase tracking-wider text-quietide-muted">
-          Appearance
-        </h2>
+        <h2 className="text-sm font-medium uppercase tracking-wider text-quietide-muted">Appearance</h2>
         <div className="grid grid-cols-3 gap-2">
           {THEME_OPTIONS.map(({ id, label, icon: Icon }) => (
             <button
@@ -101,99 +124,42 @@ export default function SettingsPage() {
             </button>
           ))}
         </div>
-        <p className="text-xs text-quietide-muted">
-          Dark is the default calm mode. Theme is saved on this device.
-        </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-medium uppercase tracking-wider text-quietide-muted">
-          Comfort
-        </h2>
+        <h2 className="text-sm font-medium uppercase tracking-wider text-quietide-muted">Sounds & voice</h2>
         <div className="space-y-2">
-          <ToggleRow
-            icon={<Volume2 className="h-4 w-4" />}
-            label="Guided voice cues"
-            description="Soft spoken prompts during guided sessions"
-            checked={guidedVoiceEnabled}
-            onChange={setGuidedVoiceEnabled}
-          />
-          <ToggleRow
-            icon={<Volume2 className="h-4 w-4" />}
-            label="SOS soft sound"
-            description="Optional brown noise under Stress SOS (off by default)"
-            checked={sosSoundEnabled}
-            onChange={setSosSoundEnabled}
-          />
-          <ToggleRow
-            icon={<Vibrate className="h-4 w-4" />}
-            label="Breathing haptics"
-            description="Light pulse on inhale and exhale (native only)"
-            checked={hapticsEnabled}
-            onChange={setHapticsEnabled}
-          />
+          <ToggleRow icon={<Volume2 className="h-4 w-4" />} label="Guided voice cues" description="Soft spoken prompts during guided sessions" checked={guidedVoiceEnabled} onChange={setGuidedVoiceEnabled} />
+          <ToggleRow icon={<Volume2 className="h-4 w-4" />} label="SOS soft sound" description="Optional brown noise under Stress SOS (off by default)" checked={sosSoundEnabled} onChange={setSosSoundEnabled} />
+          <ToggleRow icon={<Volume2 className="h-4 w-4" />} label="Focus ambient" description="Soft layers during focus work blocks" checked={focusSoundEnabled} onChange={setFocusSoundEnabled} />
+          <ToggleRow icon={<Volume2 className="h-4 w-4" />} label="Focus end chime" description="Gentle tone when a work or break ends" checked={focusChimeEnabled} onChange={setFocusChimeEnabled} />
         </div>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-medium uppercase tracking-wider text-quietide-muted">
-          Focus defaults
-        </h2>
+        <h2 className="text-sm font-medium uppercase tracking-wider text-quietide-muted">Comfort</h2>
+        <ToggleRow icon={<Vibrate className="h-4 w-4" />} label="Breathing haptics" description="Light pulse on inhale and exhale (native only)" checked={hapticsEnabled} onChange={setHapticsEnabled} />
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-medium uppercase tracking-wider text-quietide-muted">Focus defaults</h2>
         <div className="flex flex-wrap gap-2">
           {[15, 25, 45, 50].map((m) => (
-            <button
-              key={m}
-              onClick={() => setFocusTimes(m, focusBreakMinutes)}
-              className={`rounded-full px-4 py-2.5 text-sm ${
-                focusWorkMinutes === m
-                  ? "bg-quietide-primary text-white"
-                  : "bg-quietide-card text-quietide-muted"
-              }`}
-            >
-              {m}m work
-            </button>
+            <button key={m} onClick={() => setFocusTimes(m, focusBreakMinutes)} className={`rounded-full px-4 py-2.5 text-sm ${focusWorkMinutes === m ? "bg-quietide-primary text-white" : "bg-quietide-card text-quietide-muted"}`}>{m}m work</button>
           ))}
         </div>
         <div className="flex flex-wrap gap-2">
           {[3, 5, 10].map((m) => (
-            <button
-              key={m}
-              onClick={() => setFocusTimes(focusWorkMinutes, m)}
-              className={`rounded-full px-4 py-2.5 text-sm ${
-                focusBreakMinutes === m
-                  ? "bg-quietide-primary text-white"
-                  : "bg-quietide-card text-quietide-muted"
-              }`}
-            >
-              {m}m break
-            </button>
+            <button key={m} onClick={() => setFocusTimes(focusWorkMinutes, m)} className={`rounded-full px-4 py-2.5 text-sm ${focusBreakMinutes === m ? "bg-quietide-primary text-white" : "bg-quietide-card text-quietide-muted"}`}>{m}m break</button>
           ))}
         </div>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-medium uppercase tracking-wider text-quietide-muted">
-          Preferred breathing
-        </h2>
+        <h2 className="text-sm font-medium uppercase tracking-wider text-quietide-muted">Preferred breathing</h2>
         <div className="flex flex-wrap gap-2">
-          {(
-            [
-              ["box", "Box"],
-              ["478", "4-7-8"],
-              ["coherent", "Coherent"],
-            ] as const
-          ).map(([id, label]) => (
-            <button
-              key={id}
-              onClick={() => setPreferredBreathing(id)}
-              className={`rounded-full px-4 py-2.5 text-sm ${
-                preferredBreathing === id
-                  ? "bg-quietide-primary text-white"
-                  : "bg-quietide-card text-quietide-muted"
-              }`}
-            >
-              {label}
-            </button>
+          {([["box", "Box"], ["478", "4-7-8"], ["coherent", "Coherent"]] as const).map(([id, label]) => (
+            <button key={id} onClick={() => setPreferredBreathing(id)} className={`rounded-full px-4 py-2.5 text-sm ${preferredBreathing === id ? "bg-quietide-primary text-white" : "bg-quietide-card text-quietide-muted"}`}>{label}</button>
           ))}
         </div>
       </section>
@@ -201,81 +167,42 @@ export default function SettingsPage() {
       <section className="card-elevated rounded-2xl border border-quietide bg-quietide-card p-5 space-y-1">
         <p className="text-3xl font-light text-quietide-soft">{totalMinutes}</p>
         <p className="text-sm text-quietide-muted">total minutes of calm</p>
-        {streak > 0 && (
-          <p className="pt-2 text-sm text-quietide-soft">
-            {streak} day{streak === 1 ? "" : "s"} of showing up
-          </p>
-        )}
+        {streak > 0 && <p className="pt-2 text-sm text-quietide-soft">{streak} day{streak === 1 ? "" : "s"} of showing up</p>}
       </section>
 
-      <div className="flex gap-3">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={exportJson}
-          disabled={sessions.length === 0}
-        >
-          <Download className="mr-2 h-4 w-4" />
-          Export JSON
-        </Button>
-      </div>
+      <Button variant="secondary" size="sm" onClick={exportJson} disabled={sessions.length === 0}>
+        <Download className="mr-2 h-4 w-4" /> Export JSON
+      </Button>
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium uppercase tracking-wider text-quietide-muted">
-            Recent sessions
-          </h2>
+          <h2 className="text-sm font-medium uppercase tracking-wider text-quietide-muted">Recent sessions</h2>
           {sessions.length > 0 && !confirmClear && (
-            <button
-              onClick={() => setConfirmClear(true)}
-              className="flex items-center gap-1 text-xs text-quietide-muted hover:text-red-300"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Clear
+            <button onClick={() => setConfirmClear(true)} className="flex items-center gap-1 text-xs text-quietide-muted hover:text-red-300">
+              <Trash2 className="h-3.5 w-3.5" /> Clear
             </button>
           )}
         </div>
-
         {confirmClear && (
           <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 space-y-3">
-            <p className="text-sm text-quietide-soft">
-              Clear all session history? This cannot be undone.
-            </p>
+            <p className="text-sm text-quietide-soft">Clear all session history? This cannot be undone.</p>
             <div className="flex gap-2">
-              <Button size="sm" variant="danger" onClick={clear}>
-                Yes, clear history
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setConfirmClear(false)}>
-                Cancel
-              </Button>
+              <Button size="sm" variant="danger" onClick={clear}>Yes, clear history</Button>
+              <Button size="sm" variant="ghost" onClick={() => setConfirmClear(false)}>Cancel</Button>
             </div>
           </div>
         )}
-
         {sessions.length === 0 ? (
-          <p className="text-sm text-quietide-muted">
-            No sessions yet. Start breathing, focusing, or sleeping.
-          </p>
+          <p className="text-sm text-quietide-muted">No sessions yet. Start breathing, focusing, or sleeping.</p>
         ) : (
           <ul className="space-y-2">
             {sessions.slice(0, 15).map((s) => (
-              <li
-                key={s.id}
-                className="flex items-center gap-3 rounded-xl bg-quietide-card px-4 py-3 text-sm"
-              >
+              <li key={s.id} className="flex items-center gap-3 rounded-xl bg-quietide-card px-4 py-3 text-sm">
                 <div className="min-w-0 flex-1">
                   <span className="capitalize text-quietide-soft">{s.mode}</span>
-                  <span className="ml-2 text-quietide-muted">
-                    {formatDuration(s.durationSeconds)}
-                    {!s.completed && " · stopped"}
-                  </span>
+                  <span className="ml-2 text-quietide-muted">{formatDuration(s.durationSeconds)}{!s.completed && " · stopped"}</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => removeSession(s.id)}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-quietide-muted transition-colors hover:bg-red-500/15 hover:text-red-300 active:scale-95"
-                  aria-label={`Delete ${s.mode} session`}
-                >
+                <button type="button" onClick={() => removeSession(s.id)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-quietide-muted hover:bg-red-500/15 hover:text-red-300" aria-label={`Delete ${s.mode} session`}>
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </li>
@@ -284,50 +211,37 @@ export default function SettingsPage() {
         )}
       </section>
 
-      <p className="text-xs leading-relaxed text-quietide-muted">
-        Everything stays on this device. No accounts, no analytics, no cloud.
-        Notifications and Health integrations can come later — kept optional and quiet.
-      </p>
+      <section className="space-y-3">
+        <h2 className="text-sm font-medium uppercase tracking-wider text-quietide-muted">Data & updates</h2>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="secondary" onClick={clearServiceWorkerCaches}>
+            <RefreshCw className="mr-2 h-4 w-4" /> Clear cache / force update
+          </Button>
+          <Button size="sm" variant="ghost" onClick={resetOnboarding}>Reset onboarding</Button>
+        </div>
+        {cacheMsg && <p className="text-xs text-quietide-muted">{cacheMsg}</p>}
+      </section>
+
+      <p className="text-xs leading-relaxed text-quietide-muted">Everything stays on this device. No accounts, no analytics, no cloud.</p>
+      <p className="text-xs text-quietide-muted">Quietide v{APP_VERSION}</p>
     </main>
   );
 }
 
 function ToggleRow({
-  icon,
-  label,
-  description,
-  checked,
-  onChange,
+  icon, label, description, checked, onChange,
 }: {
-  icon: React.ReactNode;
-  label: string;
-  description: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
+  icon: React.ReactNode; label: string; description: string; checked: boolean; onChange: (v: boolean) => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={() => onChange(!checked)}
-      className="flex w-full items-center gap-3 rounded-2xl border border-quietide bg-quietide-card px-4 py-3 text-left transition-colors active:scale-[0.99]"
-    >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-quietide-primary/10 text-quietide-primary">
-        {icon}
-      </span>
+    <button type="button" onClick={() => onChange(!checked)} className="flex w-full items-center gap-3 rounded-2xl border border-quietide bg-quietide-card px-4 py-3 text-left transition-colors active:scale-[0.99]">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-quietide-primary/10 text-quietide-primary">{icon}</span>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-quietide-soft">{label}</p>
         <p className="text-xs text-quietide-muted">{description}</p>
       </div>
-      <span
-        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-          checked ? "bg-quietide-primary" : "bg-quietide-border/20"
-        }`}
-      >
-        <span
-          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-            checked ? "translate-x-5" : "translate-x-0.5"
-          }`}
-        />
+      <span className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${checked ? "bg-quietide-primary" : "bg-quietide-border/20"}`}>
+        <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-5" : "translate-x-0.5"}`} />
       </span>
     </button>
   );
