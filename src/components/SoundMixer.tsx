@@ -2,49 +2,73 @@
 
 import { useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
+import { SOUND_PRESETS, type SoundLayer } from "@/lib/types";
 import { audioEngine } from "@/lib/audioEngine";
 import { cn } from "@/lib/utils";
-import type { SoundLayer } from "@/lib/types";
 
 export function SoundMixer() {
   const sounds = useAppStore((s) => s.sounds);
   const toggleSound = useAppStore((s) => s.toggleSound);
   const setSoundVolume = useAppStore((s) => s.setSoundVolume);
+  const applyPreset = useAppStore((s) => s.applyPreset);
+  const lastPresetId = useAppStore((s) => s.lastPresetId);
 
-  // Keep audio engine in sync with store
   useEffect(() => {
     sounds.forEach((s) => {
-      audioEngine.setLayer(s.id as any, s.active, s.volume);
+      audioEngine.setLayer(
+        s.id as "rain" | "ocean" | "forest" | "brown" | "wind",
+        s.active,
+        s.volume
+      );
     });
   }, [sounds]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      // leave audio running if user navigates – only stop on explicit fade
-    };
-  }, []);
-
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4">
+      <div className="space-y-2">
         <h3 className="text-sm font-medium uppercase tracking-wider text-quietide-muted">
-          Soundscape
+          Presets
         </h3>
-        <span className="text-xs text-quietide-muted">
-          {sounds.filter((s) => s.active).length} active
-        </span>
+        <div className="flex flex-wrap gap-2">
+          {SOUND_PRESETS.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => applyPreset(p)}
+              className={cn(
+                "rounded-full px-3 py-1.5 text-sm transition-colors active:scale-95",
+                lastPresetId === p.id
+                  ? "bg-quietide-primary text-white"
+                  : "bg-quietide-card text-quietide-muted hover:text-quietide-soft border border-quietide"
+              )}
+            >
+              <span className="mr-1">{p.emoji}</span>
+              {p.name}
+            </button>
+          ))}
+        </div>
       </div>
-      <ul className="space-y-2">
-        {sounds.map((sound) => (
-          <SoundRow
-            key={sound.id}
-            sound={sound}
-            onToggle={() => toggleSound(sound.id)}
-            onVolume={(v) => setSoundVolume(sound.id, v)}
-          />
-        ))}
-      </ul>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium uppercase tracking-wider text-quietide-muted">
+            Soundscape
+          </h3>
+          <span className="text-xs text-quietide-muted">
+            {sounds.filter((s) => s.active).length} active
+          </span>
+        </div>
+        <ul className="space-y-2">
+          {sounds.map((sound) => (
+            <SoundRow
+              key={sound.id}
+              sound={sound}
+              onToggle={() => toggleSound(sound.id)}
+              onVolume={(v) => setSoundVolume(sound.id, v)}
+            />
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
@@ -62,7 +86,8 @@ function SoundRow({
     <li
       className={cn(
         "flex items-center gap-3 rounded-2xl border border-quietide bg-quietide-card px-4 py-3 transition-all",
-        sound.active && "border-quietide-primary/30 bg-quietide-surface shadow-sm shadow-quietide-primary/10"
+        sound.active &&
+          "border-quietide-primary/30 bg-quietide-surface shadow-sm shadow-quietide-primary/10"
       )}
     >
       <button
