@@ -2,25 +2,27 @@
 
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Moon, Wind, Target, AlertCircle } from "lucide-react";
+import { Moon, Wind, Target, AlertCircle, Sparkles } from "lucide-react";
 
 interface ModeCardProps {
   title: string;
   description: string;
   href: string;
-  icon: "sleep" | "relax" | "focus" | "sos";
+  icon: "sleep" | "relax" | "focus" | "sos" | "guided" | "breathe";
   className?: string;
 }
 
 const icons = {
   sleep: Moon,
   relax: Wind,
+  breathe: Wind,
   focus: Target,
   sos: AlertCircle,
+  guided: Sparkles,
 };
 
 export function ModeCard({ title, description, href, icon, className }: ModeCardProps) {
-  const Icon = icons[icon];
+  const Icon = icons[icon] ?? Wind;
 
   return (
     <Link

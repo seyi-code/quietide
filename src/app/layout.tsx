@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { BottomNav } from "@/components/BottomNav";
+import { UpdateBanner } from "@/components/UpdateBanner";
 
 export const metadata: Metadata = {
   title: "Quietide — Sleep, Focus & Calm",
@@ -59,6 +60,7 @@ export default function RootLayout({
           <div className="mx-auto min-h-screen max-w-lg px-4 pb-28 pt-8">
             {children}
           </div>
+          <UpdateBanner />
           <BottomNav />
         </ThemeProvider>
         <script
