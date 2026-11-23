@@ -8,10 +8,12 @@ import { useTimer } from "@/hooks/useTimer";
 import { Button } from "@/components/ui/Button";
 import { formatTime } from "@/lib/utils";
 import { speakCue, stopSpeaking, warmVoices } from "@/lib/voice";
-import { ArrowLeft, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, Volume2, VolumeX, Star } from "lucide-react";
 
 export default function GuidedPage() {
   const [active, setActive] = useState<GuidedSession | null>(null);
+  const favoriteGuidedId = useAppStore((s) => s.favoriteGuidedId);
+  const setFavoriteGuidedId = useAppStore((s) => s.setFavoriteGuidedId);
 
   useEffect(() => {
     warmVoices();
@@ -30,10 +32,7 @@ export default function GuidedPage() {
   return (
     <main className="flex flex-col gap-6">
       <div className="flex items-center gap-3">
-        <Link
-          href="/"
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-quietide-card text-quietide-muted hover:text-quietide-soft"
-        >
+        <Link href="/" className="flex h-11 w-11 items-center justify-center rounded-full bg-quietide-card text-quietide-muted hover:text-quietide-soft">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>
@@ -48,25 +47,32 @@ export default function GuidedPage() {
             {cat === "sleep" ? "Sleep" : cat === "stress" ? "Stress" : "Focus"}
           </h2>
           <ul className="space-y-2">
-            {byCat[cat].map((s) => (
-              <li key={s.id}>
-                <button
-                  onClick={() => setActive(s)}
-                  className="card-elevated flex w-full items-center gap-4 rounded-2xl border border-quietide bg-quietide-card p-4 text-left transition-all hover:border-quietide-primary/30 active:scale-[0.99]"
-                >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-quietide-primary/10 text-2xl">
-                    {s.emoji}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-quietide-soft">{s.title}</p>
-                    <p className="text-sm text-quietide-muted">{s.description}</p>
-                  </div>
-                  <span className="text-xs tabular-nums text-quietide-muted">
-                    {s.durationMin} min
-                  </span>
-                </button>
-              </li>
-            ))}
+            {byCat[cat].map((s) => {
+              const isFav = favoriteGuidedId === s.id;
+              return (
+                <li key={s.id} className="flex items-stretch gap-2">
+                  <button
+                    onClick={() => setActive(s)}
+                    className="card-elevated flex min-w-0 flex-1 items-center gap-4 rounded-2xl border border-quietide bg-quietide-card p-4 text-left transition-all hover:border-quietide-primary/30 active:scale-[0.99]"
+                  >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-quietide-primary/10 text-2xl">{s.emoji}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-quietide-soft">{s.title}</p>
+                      <p className="text-sm text-quietide-muted">{s.description}</p>
+                    </div>
+                    <span className="text-xs tabular-nums text-quietide-muted">{s.durationMin} min</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFavoriteGuidedId(isFav ? null : s.id)}
+                    className="flex w-12 shrink-0 items-center justify-center rounded-2xl border border-quietide bg-quietide-card text-quietide-muted hover:text-quietide-primary"
+                    aria-label={isFav ? "Unfavorite" : "Set as favorite"}
+                  >
+                    <Star className={`h-5 w-5 ${isFav ? "fill-quietide-primary text-quietide-primary" : ""}`} />
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </section>
       ))}
@@ -129,9 +135,7 @@ function GuidedPlayer({
     }
   }, [isFinished, startedAt, addSession, totalSec, session.id]);
 
-  useEffect(() => {
-    return () => stopSpeaking();
-  }, []);
+  useEffect(() => () => stopSpeaking(), []);
 
   const handleStart = () => {
     loggedRef.current = false;
@@ -169,10 +173,7 @@ function GuidedPlayer({
   return (
     <main className="flex min-h-[70vh] flex-col gap-8">
       <div className="flex items-center gap-3">
-        <button
-          onClick={handleEnd}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-quietide-card text-quietide-muted hover:text-quietide-soft"
-        >
+        <button onClick={handleEnd} className="flex h-11 w-11 items-center justify-center rounded-full bg-quietide-card text-quietide-muted hover:text-quietide-soft">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="min-w-0 flex-1">
@@ -187,11 +188,7 @@ function GuidedPlayer({
           className="flex h-11 w-11 items-center justify-center rounded-full bg-quietide-card text-quietide-muted hover:text-quietide-soft"
           aria-label={guidedVoiceEnabled ? "Mute voice cues" : "Enable voice cues"}
         >
-          {guidedVoiceEnabled ? (
-            <Volume2 className="h-5 w-5 text-quietide-primary" />
-          ) : (
-            <VolumeX className="h-5 w-5" />
-          )}
+          {guidedVoiceEnabled ? <Volume2 className="h-5 w-5 text-quietide-primary" /> : <VolumeX className="h-5 w-5" />}
         </button>
       </div>
 
@@ -200,9 +197,7 @@ function GuidedPlayer({
         <p className="max-w-xs text-xl leading-relaxed text-quietide-soft transition-opacity duration-700">
           {isFinished ? "Session complete. Well done." : cue}
         </p>
-        <p className="text-4xl font-light tabular-nums text-quietide-muted">
-          {formatTime(secondsLeft)}
-        </p>
+        <p className="text-4xl font-light tabular-nums text-quietide-muted">{formatTime(secondsLeft)}</p>
         {guidedVoiceEnabled && isRunning && (
           <p className="text-xs text-quietide-muted">Voice cues on · stays on this device</p>
         )}
@@ -210,34 +205,17 @@ function GuidedPlayer({
 
       <div className="flex justify-center gap-3 pb-4">
         {!isRunning && !isFinished ? (
-          <Button size="lg" onClick={handleStart}>
-            Begin
-          </Button>
+          <Button size="lg" onClick={handleStart}>Begin</Button>
         ) : isFinished ? (
-          <Button size="lg" onClick={handleEnd}>
-            Done
-          </Button>
+          <Button size="lg" onClick={handleEnd}>Done</Button>
         ) : (
           <>
-            <Button
-              size="lg"
-              variant="secondary"
-              onClick={() => {
-                stopSpeaking();
-                pause();
-              }}
-            >
-              Pause
-            </Button>
-            <Button size="lg" variant="ghost" onClick={handleEnd}>
-              End
-            </Button>
+            <Button size="lg" variant="secondary" onClick={() => { stopSpeaking(); pause(); }}>Pause</Button>
+            <Button size="lg" variant="ghost" onClick={handleEnd}>End</Button>
           </>
         )}
         {!isRunning && !isFinished && startedAt && (
-          <Button size="lg" onClick={start}>
-            Resume
-          </Button>
+          <Button size="lg" onClick={start}>Resume</Button>
         )}
       </div>
     </main>
