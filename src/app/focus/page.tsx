@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { SoundMixer } from "@/components/SoundMixer";
+import { FocusHistoryChart } from "@/components/FocusHistoryChart";
 import { useTimer } from "@/hooks/useTimer";
 import { useAppStore } from "@/store/useAppStore";
 import { formatTime } from "@/lib/utils";
@@ -22,6 +23,7 @@ export default function FocusPage() {
   const focusChimeEnabled = useAppStore((s) => s.focusChimeEnabled);
   const hapticsEnabled = useAppStore((s) => s.hapticsEnabled);
   const sounds = useAppStore((s) => s.sounds);
+  const sessions = useAppStore((s) => s.sessions);
 
   const [phase, setPhase] = useState<"work" | "break">("work");
   const [startedAt, setStartedAt] = useState<Date | null>(null);
@@ -184,6 +186,8 @@ export default function FocusPage() {
       <p className="text-center text-sm text-quietide-muted">
         {workMin} min work · {breakMin} min break · change in Settings
       </p>
+
+      <FocusHistoryChart sessions={sessions} />
     </main>
   );
 }
