@@ -6,7 +6,7 @@ export type Mood = "calm" | "stressed" | "tired" | "focused" | "anxious" | null;
 
 export type ThemePreference = "dark" | "light" | "system";
 
-export const APP_VERSION = "0.3.0";
+export const APP_VERSION = "0.4.0";
 
 export interface SessionRecord {
   id: string;
@@ -122,6 +122,21 @@ export const GUIDED_SESSIONS: GuidedSession[] = [
       { atSec: 150, text: "Let the next breath be a little slower." },
       { atSec: 240, text: "Anxiety may visit. You do not have to follow it." },
       { atSec: 330, text: "Return when you need to. This calm is yours." },
+    ],
+  },
+  {
+    id: "sos-90",
+    title: "90-second ground",
+    description: "Ultra-short body anchor when spiraling",
+    durationMin: 2,
+    category: "stress",
+    emoji: "⚓",
+    cues: [
+      { atSec: 0, text: "Feet on the floor. Name one color you see." },
+      { atSec: 20, text: "Inhale 4… hold… exhale 6." },
+      { atSec: 50, text: "Unclench the jaw. Drop the shoulders." },
+      { atSec: 80, text: "You are here. One more slow breath." },
+      { atSec: 110, text: "Carry this steadiness with you." },
     ],
   },
   {
