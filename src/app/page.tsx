@@ -6,7 +6,7 @@ import { ModeCard } from "@/components/ModeCard";
 import { Onboarding } from "@/components/Onboarding";
 import { useAppStore, computeGentleStreak } from "@/store/useAppStore";
 import { GUIDED_SESSIONS, type Mood } from "@/lib/types";
-import { weeklyGlance, moodHint } from "@/lib/insights";
+import { weeklyGlance, moodHint, weeklyReport } from "@/lib/insights";
 import { Settings, Download } from "lucide-react";
 
 const MOODS: { id: NonNullable<Mood>; label: string; emoji: string }[] = [
@@ -45,6 +45,7 @@ export default function HomePage() {
   const streak = useMemo(() => computeGentleStreak(sessions), [sessions]);
   const suggestion = suggestionForMood(activeMood);
   const glance = useMemo(() => weeklyGlance(sessions), [sessions]);
+  const report = useMemo(() => weeklyReport(sessions), [sessions]);
   const hint = useMemo(() => moodHint(sessions, activeMood), [sessions, activeMood]);
   const favorite = favoriteGuidedId
     ? GUIDED_SESSIONS.find((g) => g.id === favoriteGuidedId)
@@ -98,7 +99,6 @@ export default function HomePage() {
               {recentCount > 0 ? ` · ${recentCount} sessions` : ""}
             </p>
           )}
-          {glance && <p className="text-sm text-quietide-muted">{glance}</p>}
         </header>
 
         {showInstallTip && (
@@ -114,6 +114,16 @@ export default function HomePage() {
               Got it
             </button>
           </div>
+        )}
+
+        {report && (
+          <section className="card-elevated rounded-2xl border border-quietide bg-quietide-card p-4 space-y-1">
+            <p className="text-xs uppercase tracking-wider text-quietide-muted">This week</p>
+            <p className="text-sm font-medium text-quietide-soft">{report.line}</p>
+            {glance && glance !== report.line && (
+              <p className="text-xs text-quietide-muted">{glance}</p>
+            )}
+          </section>
         )}
 
         <section className="space-y-3">
