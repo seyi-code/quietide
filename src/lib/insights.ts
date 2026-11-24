@@ -1,6 +1,5 @@
 import type { Mood, SessionRecord } from "@/lib/types";
 
-/** Sessions completed in the last 7 calendar days (local) */
 export function sessionsThisWeek(sessions: SessionRecord[]): SessionRecord[] {
   const now = new Date();
   const start = new Date(now);
@@ -43,7 +42,6 @@ export function weeklyGlance(sessions: SessionRecord[]): string | null {
   return `${week.length} sessions this week · ${totalMin} min of calm`;
 }
 
-/** Soft one-line mood → mode correlation (never judgmental) */
 export function moodHint(
   sessions: SessionRecord[],
   recentMood: Mood
@@ -78,4 +76,32 @@ export function moodHint(
       : "Calm";
 
   return `You often choose ${label[top[0]] || top[0]} when ${moodLabel}`;
+}
+
+export function weeklyReport(sessions: SessionRecord[]): {
+  count: number;
+  totalMin: number;
+  topMode: string | null;
+  line: string;
+} | null {
+  const week = sessionsThisWeek(sessions);
+  if (week.length === 0) return null;
+  const totalMin = Math.round(week.reduce((a, s) => a + s.durationSeconds, 0) / 60);
+  const counts: Record<string, number> = {};
+  for (const s of week) counts[s.mode] = (counts[s.mode] || 0) + 1;
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  const labels: Record<string, string> = {
+    sleep: "Sleep",
+    sos: "SOS",
+    guided: "Guided",
+    focus: "Focus",
+    relax: "Breathe",
+  };
+  const topMode = top ? labels[top[0]] || top[0] : null;
+  const line =
+    week.length === 1
+      ? `1 quiet session · ${totalMin} min`
+      : `${week.length} sessions · ${totalMin} min of calm` +
+        (topMode ? ` · mostly ${topMode}` : "");
+  return { count: week.length, totalMin, topMode, line };
 }
