@@ -1,20 +1,20 @@
 {
   "name": "quietide",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "node scripts/write-icons.mjs && next build",
     "start": "next start",
     "lint": "next lint",
-    "icons": "node scripts/write-icons.mjs",
-    "prebuild": "node scripts/write-icons.mjs",
     "cap:init": "npx cap init Quietide com.quietide.app --web-dir=out",
     "cap:add:ios": "npx cap add ios",
     "cap:add:android": "npx cap add android",
     "cap:sync": "npx cap sync",
     "cap:open:ios": "npx cap open ios",
-    "cap:open:android": "npx cap open android"
+    "cap:open:android": "npx cap open android",
+    "icons": "node scripts/write-icons.mjs",
+    "prebuild": "node scripts/write-icons.mjs"
   },
   "dependencies": {
     "next": "14.2.5",
