@@ -1,5 +1,5 @@
-/* Quietide SW — keep fetch handler minimal so Android Chrome allows Install (WebAPK) */
-const CACHE_NAME = "quietide-v6";
+/* Quietide SW — quietide-v7 */
+const CACHE_NAME = "quietide-v7";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -21,7 +21,6 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-/* Required for Android Chrome installability */
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   event.respondWith(
