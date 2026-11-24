@@ -1,5 +1,5 @@
-/* Quietide SW — quietide-v7 */
-const CACHE_NAME = "quietide-v7";
+/* Quietide SW — quietide-v8 */
+const CACHE_NAME = "quietide-v8";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();

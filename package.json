@@ -1,6 +1,6 @@
 {
   "name": "quietide",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -13,6 +13,8 @@
     "cap:sync": "npx cap sync",
     "cap:open:ios": "npx cap open ios",
     "cap:open:android": "npx cap open android",
+    "cap:android": "npm run build && npx cap sync android",
+    "android:sync": "npm run build && npx cap copy android && npx cap sync android",
     "icons": "node scripts/write-icons.mjs",
     "prebuild": "node scripts/write-icons.mjs"
   },
@@ -24,7 +26,10 @@
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.4.0",
     "lucide-react": "^0.424.0",
-    "@capacitor/haptics": "^6.0.1"
+    "@capacitor/haptics": "^6.0.1",
+    "@capacitor/app": "^6.0.1",
+    "@capacitor/status-bar": "^6.0.1",
+    "@capacitor-community/keep-awake": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.12",
