@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { BottomNav } from "@/components/BottomNav";
 import { UpdateBanner } from "@/components/UpdateBanner";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { NativeShell } from "@/components/NativeShell";
 
 export const metadata: Metadata = {
   title: "Quietide — Sleep, Focus & Calm",
@@ -69,6 +70,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-quietide-bg antialiased">
         <ThemeProvider>
           <ServiceWorkerRegister />
+          <NativeShell />
           <div className="mx-auto min-h-screen max-w-lg px-4 pb-28 pt-8">
             {children}
           </div>
