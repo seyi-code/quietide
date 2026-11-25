@@ -181,7 +181,9 @@ export default function FocusPage() {
         />
       </label>
 
-      {focusSoundEnabled && <SoundMixer />}
+      {focusSoundEnabled && (
+        <SoundMixer live={isRunning && phase === "work"} />
+      )}
 
       <p className="text-center text-sm text-quietide-muted">
         {workMin} min work · {breakMin} min break · change in Settings
