@@ -19,6 +19,15 @@ export default function GuidedPage() {
     warmVoices();
   }, []);
 
+  // Deep link: /guided/?id=sos-90
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const id = new URLSearchParams(window.location.search).get("id");
+    if (!id) return;
+    const match = GUIDED_SESSIONS.find((s) => s.id === id);
+    if (match) setActive(match);
+  }, []);
+
   if (active) {
     return <GuidedPlayer session={active} onExit={() => setActive(null)} />;
   }
@@ -53,7 +62,11 @@ export default function GuidedPage() {
                 <li key={s.id} className="flex items-stretch gap-2">
                   <button
                     onClick={() => setActive(s)}
-                    className="card-elevated flex min-w-0 flex-1 items-center gap-4 rounded-2xl border border-quietide bg-quietide-card p-4 text-left transition-all hover:border-quietide-primary/30 active:scale-[0.99]"
+                    className={`card-elevated flex min-w-0 flex-1 items-center gap-4 rounded-2xl border p-4 text-left transition-all hover:border-quietide-primary/30 active:scale-[0.99] ${
+                      s.id === "sos-90"
+                        ? "border-quietide-primary/40 bg-quietide-primary/5"
+                        : "border-quietide bg-quietide-card"
+                    }`}
                   >
                     <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-quietide-primary/10 text-2xl">{s.emoji}</span>
                     <div className="min-w-0 flex-1">
