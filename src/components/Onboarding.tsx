@@ -145,10 +145,12 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           <Shield className="h-8 w-8" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-2xl font-semibold text-quietide-soft">Private by design</h2>
+          <h2 className="text-2xl font-semibold text-quietide-soft">Private & offline</h2>
           <p className="text-quietide-muted">
-            No accounts. No cloud. Sessions stay on this phone. Add Quietide to your home
-            screen for offline use anytime.
+            No accounts. No cloud. Sessions stay on this phone.
+          </p>
+          <p className="text-sm text-quietide-soft">
+            Open Quietide once while online so every tab can work offline later.
           </p>
           <p className="text-xs text-quietide-muted">
             Chrome: menu → Install app / Add to Home screen

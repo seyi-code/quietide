@@ -41,11 +41,9 @@ npx cap open android
 | `@capacitor/status-bar` | Dark status bar |
 | `@capacitor/app` | Back button / app state |
 
-## Play Store notes
+## Play Store
 
-- App ID: `com.quietide.app`
-- Privacy: local-only storage — state that in Data safety
-- Content rating: Everyone
+See [PLAY_STORE.md](./PLAY_STORE.md) for listing copy, Data safety, and AAB steps.
 
 ## Troubleshooting
 

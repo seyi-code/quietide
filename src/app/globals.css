@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Channel values (no #) so Tailwind opacity modifiers work */
 :root,
 html.dark {
   --q-bg: 11 15 26;
@@ -18,13 +17,13 @@ html.dark {
 }
 
 html.light {
-  --q-bg: 244 246 251;
+  --q-bg: 241 245 249;
   --q-surface: 255 255 255;
   --q-card: 255 255 255;
-  --q-primary: 79 110 247;
+  --q-primary: 67 97 238;
   --q-secondary: 124 109 240;
   --q-accent: 139 92 246;
-  --q-muted: 100 116 139;
+  --q-muted: 51 65 85;
   --q-soft: 15 23 42;
   --q-border: 15 23 42;
   --color-scheme: light;
@@ -58,14 +57,12 @@ body {
   .text-balance {
     text-wrap: balance;
   }
-
   .border-quietide {
     border-color: rgb(var(--q-border) / 0.08);
   }
   .border-quietide-strong {
     border-color: rgb(var(--q-border) / 0.14);
   }
-
   .card-elevated {
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.12), 0 4px 12px rgb(0 0 0 / 0.08);
   }
@@ -91,10 +88,6 @@ html.dark .card-elevated {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-html.light {
-  --q-muted: 71 85 105;
 }
 
 html.light .border-quietide {
