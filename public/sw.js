@@ -1,5 +1,5 @@
 /* Quietide SW — offline-first shell + runtime cache */
-const CACHE_NAME = "quietide-v9";
+const CACHE_NAME = "quietide-v10";
 const PRECACHE = [
   "/",
   "/index.html",
@@ -8,6 +8,7 @@ const PRECACHE = [
   "/breathe/",
   "/guided/",
   "/settings/",
+  "/about/",
   "/manifest.json",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
