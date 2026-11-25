@@ -238,7 +238,7 @@ export default function SleepPage() {
         </div>
       </div>
 
-      <SoundMixer />
+      <SoundMixer live={isRunning} />
     </main>
   );
 }
