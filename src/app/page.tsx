@@ -20,9 +20,9 @@ const MOODS: { id: NonNullable<Mood>; label: string; emoji: string }[] = [
 function suggestionForMood(mood: Mood): { title: string; href: string } | null {
   if (!mood) return null;
   if (mood === "stressed" || mood === "anxious")
-    return { title: "Try a 5‑min stress reset", href: "/guided/" };
+    return { title: "90-second ground — right now", href: "/guided/?id=sos-90" };
   if (mood === "tired") return { title: "Wind down with sleep sounds", href: "/sleep/" };
-  if (mood === "focused") return { title: "Prime focus, then work", href: "/guided/" };
+  if (mood === "focused") return { title: "Prime focus, then work", href: "/guided/?id=focus-prime" };
   return { title: "A quiet breath is always available", href: "/breathe/" };
 }
 
@@ -35,6 +35,7 @@ export default function HomePage() {
 
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showInstallTip, setShowInstallTip] = useState(false);
+  const [showOfflineTip, setShowOfflineTip] = useState(false);
 
   const today = new Date().toISOString().slice(0, 10);
   const moodIsToday = moodDate === today;
@@ -55,11 +56,13 @@ export default function HomePage() {
     const seen = localStorage.getItem("quietide-onboarded");
     if (!seen) setShowOnboarding(true);
     const tipDismissed = localStorage.getItem("quietide-install-tip");
+    const offlineDismissed = localStorage.getItem("quietide-offline-tip");
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       // @ts-expect-error iOS
       window.navigator.standalone === true;
     if (!tipDismissed && !isStandalone && seen) setShowInstallTip(true);
+    if (!offlineDismissed && seen) setShowOfflineTip(true);
   }, []);
 
   const finishOnboarding = () => {
@@ -70,6 +73,11 @@ export default function HomePage() {
   const dismissInstall = () => {
     localStorage.setItem("quietide-install-tip", "1");
     setShowInstallTip(false);
+  };
+
+  const dismissOffline = () => {
+    localStorage.setItem("quietide-offline-tip", "1");
+    setShowOfflineTip(false);
   };
 
   return (
@@ -111,6 +119,24 @@ export default function HomePage() {
               </p>
             </div>
             <button type="button" onClick={dismissInstall} className="text-xs text-quietide-muted hover:text-quietide-soft">
+              Got it
+            </button>
+          </div>
+        )}
+
+        {showOfflineTip && (
+          <div className="card-elevated flex items-start gap-3 rounded-2xl border border-quietide bg-quietide-card p-4">
+            <span className="mt-0.5 text-lg" aria-hidden>📡</span>
+            <div className="min-w-0 flex-1 space-y-1">
+              <p className="text-sm font-medium text-quietide-soft">
+                Works offline after one visit
+              </p>
+              <p className="text-xs text-quietide-muted">
+                Open each tab once while online. Quietide then runs without a network —
+                sleep, breathe, and focus stay on this device.
+              </p>
+            </div>
+            <button type="button" onClick={dismissOffline} className="text-xs text-quietide-muted hover:text-quietide-soft">
               Got it
             </button>
           </div>
@@ -176,7 +202,12 @@ export default function HomePage() {
           <ModeCard title="Focus" description="Work / break timer with optional ambient" href="/focus/" icon="focus" />
         </section>
 
-        <p className="text-center text-xs text-quietide-muted">Private · offline-first · no accounts</p>
+        <p className="text-center text-xs text-quietide-muted">
+          Private · offline-first · no accounts ·{" "}
+          <Link href="/about/" className="text-quietide-primary hover:underline">
+            About
+          </Link>
+        </p>
       </main>
     </>
   );
