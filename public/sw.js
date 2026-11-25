@@ -1,11 +1,28 @@
-/* Quietide SW — quietide-v8 */
-const CACHE_NAME = "quietide-v8";
+/* Quietide SW — offline-first shell + runtime cache */
+const CACHE_NAME = "quietide-v9";
+const PRECACHE = [
+  "/",
+  "/index.html",
+  "/sleep/",
+  "/focus/",
+  "/breathe/",
+  "/guided/",
+  "/settings/",
+  "/manifest.json",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
+  "/offline.html",
+];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
-      cache.addAll(["/", "/manifest.json"]).catch(() => {})
+      Promise.all(
+        PRECACHE.map((url) =>
+          cache.add(url).catch(() => {})
+        )
+      )
     )
   );
 });
@@ -23,6 +40,31 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((c) => c.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(async () => {
+          const cached =
+            (await caches.match(event.request)) ||
+            (await caches.match(url.pathname)) ||
+            (await caches.match("/")) ||
+            (await caches.match("/offline.html"));
+          return cached || new Response("Offline", { status: 503, statusText: "Offline" });
+        })
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const network = fetch(event.request)
@@ -34,9 +76,6 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() => cached);
-      if (event.request.mode === "navigate") {
-        return network.then((r) => r || cached || caches.match("/"));
-      }
       return cached || network;
     })
   );
