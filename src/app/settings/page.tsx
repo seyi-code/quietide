@@ -94,6 +94,7 @@ export default function SettingsPage() {
   const resetOnboarding = () => {
     localStorage.removeItem("quietide-onboarded");
     localStorage.removeItem("quietide-install-tip");
+    localStorage.removeItem("quietide-offline-tip");
     setCacheMsg("Onboarding will show on next home visit.");
   };
 
@@ -222,7 +223,12 @@ export default function SettingsPage() {
         {cacheMsg && <p className="text-xs text-quietide-muted">{cacheMsg}</p>}
       </section>
 
-      <p className="text-xs leading-relaxed text-quietide-muted">Everything stays on this device. No accounts, no analytics, no cloud.</p>
+      <p className="text-xs leading-relaxed text-quietide-muted">
+        Everything stays on this device. No accounts, no analytics, no cloud.{" "}
+        <Link href="/privacy/" className="text-quietide-primary hover:underline">Privacy</Link>
+        {" · "}
+        <a href="https://github.com/seyi-code/quietide/releases/latest" className="text-quietide-primary hover:underline" target="_blank" rel="noreferrer">Android APK</a>
+      </p>
       <p className="text-xs text-quietide-muted">Quietide v{APP_VERSION}</p>
     </main>
   );
