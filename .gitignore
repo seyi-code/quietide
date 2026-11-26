@@ -1,0 +1,29 @@
+node_modules/
+.next/
+out/
+dist/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+
+# Android (CI regenerates; local builds stay local)
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/captures/
+*.apk
+*.aab
+*.keystore
+!debug.keystore
+
+# iOS
+ios/App/Pods/
+ios/DerivedData/
+
+# IDE
+.idea/
+.vscode/
+*.iml
