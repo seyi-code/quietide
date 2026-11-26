@@ -68,6 +68,20 @@ export default function AboutPage() {
           <Download className="h-3.5 w-3.5" />
           Install from Chrome: menu → Install app
         </p>
+        <p className="text-xs text-quietide-muted">
+          <Link href="/privacy/" className="text-quietide-primary hover:underline">
+            Privacy policy
+          </Link>
+          {" · "}
+          <a
+            href="https://github.com/seyi-code/quietide/releases/latest"
+            className="text-quietide-primary hover:underline"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Android APK
+          </a>
+        </p>
       </section>
 
       <p className="text-center text-xs text-quietide-muted">

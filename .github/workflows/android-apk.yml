@@ -9,7 +9,7 @@ on:
       - "docs/**"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-apk:
@@ -38,7 +38,6 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      # Avoid default "tools" package (removed from current SDK catalogs)
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -60,12 +59,14 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: Locate APK
+      - name: Locate and rename APK
         id: apk
         run: |
-          APK=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
-          echo "path=$APK" >> "$GITHUB_OUTPUT"
-          ls -la "$APK"
+          SRC=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
+          DEST="$RUNNER_TEMP/Quietide-debug.apk"
+          cp "$SRC" "$DEST"
+          echo "path=$DEST" >> "$GITHUB_OUTPUT"
+          ls -la "$DEST"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -74,3 +75,24 @@ jobs:
           path: ${{ steps.apk.outputs.path }}
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish GitHub Release (latest APK)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-latest
+          name: Quietide Android (debug)
+          body: |
+            **Debug APK** for personal testing (not for Play Store).
+
+            - Package: `com.quietide.app`
+            - Install: download `Quietide-debug.apk`, allow unknown sources if prompted
+            - Privacy: https://quietide.vercel.app/privacy/
+            - Web / PWA: https://quietide.vercel.app/
+
+            Built from commit `${{ github.sha }}`.
+          files: ${{ steps.apk.outputs.path }}
+          draft: false
+          prerelease: true
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
