@@ -6,7 +6,7 @@ export type Mood = "calm" | "stressed" | "tired" | "focused" | "anxious" | null;
 
 export type ThemePreference = "dark" | "light" | "system";
 
-export const APP_VERSION = "0.6.0";
+export const APP_VERSION = "0.7.0";
 
 export interface SessionRecord {
   id: string;

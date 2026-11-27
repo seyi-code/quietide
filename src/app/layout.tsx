@@ -6,10 +6,15 @@ import { UpdateBanner } from "@/components/UpdateBanner";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { NativeShell } from "@/components/NativeShell";
 
+const SITE = "https://quietide.vercel.app";
+const TITLE = "Quietide — Sleep, Focus & Calm";
+const DESCRIPTION =
+  "Private, offline-first sleep sounds, focus timer, breathing, and guided calm. No accounts. No cloud.";
+
 export const metadata: Metadata = {
-  title: "Quietide — Sleep, Focus & Calm",
-  description:
-    "A private, offline-first space for better sleep, deep focus, guided breathing and instant stress relief.",
+  title: TITLE,
+  description: DESCRIPTION,
+  metadataBase: new URL(SITE),
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -23,10 +28,27 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
   },
+  openGraph: {
+    type: "website",
+    url: SITE,
+    title: TITLE,
+    description: DESCRIPTION,
+    siteName: "Quietide",
+    images: [{ url: "/icons/icon-512.png", width: 512, height: 512, alt: "Quietide" }],
+  },
+  twitter: {
+    card: "summary",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/icons/icon-512.png"],
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0B0F1A",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#0B0F1A" },
+    { media: "(prefers-color-scheme: light)", color: "#F1F5F9" },
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

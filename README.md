@@ -1,73 +1,63 @@
 # Quietide
 
-**Sleep · Relax · Focus · Stress Relief**
+**Sleep · Focus · Breathe · Guided calm**
 
-A calm, private, offline-first web + native app for better sleep, guided breathing, deep focus, and quick stress resets.
+Private, offline-first app for sleep sounds, focus timers, breathing, and short guided sessions. No accounts. No cloud.
+
+| | |
+|--|--|
+| **Web / PWA** | https://quietide.vercel.app/ |
+| **Android APK** | https://github.com/seyi-code/quietide/releases/latest |
+| **Privacy** | https://quietide.vercel.app/privacy/ |
 
 ---
 
-## Quick Start
+## Install
+
+### Phone (PWA)
+1. Open https://quietide.vercel.app/ in Chrome  
+2. Menu → **Install app** / **Add to Home screen**  
+3. Open each tab once online so offline works later  
+
+### Android APK (debug)
+1. https://github.com/seyi-code/quietide/releases/latest  
+2. Download **Quietide-debug.apk**  
+3. Allow install from browser/Files if prompted  
+
+CI rebuilds the APK on every push to `main` and updates that release.
+
+---
+
+## Features
+
+- **Sleep** — layered ambient sounds, timer, fade-out (sounds only after you press Start)
+- **Focus** — work/break timer, optional ambient + end chime, history chart
+- **Breathe** — box, 4-7-8, coherent pacer · Stress SOS
+- **Guided** — short on-device spoken cues (including 90-second ground)
+- **Mood check-in** → suggested next step
+- Dark / light / system theme
+- Session history, JSON export, delete per entry
+- PWA + Capacitor Android shell (haptics, keep-awake, status bar)
+
+---
+
+## Dev
 
 ```bash
-cd quietide
 npm install
-npm run dev
+npm run dev          # http://localhost:3000
+npm run build        # static export → out/
+npm run android:sync # build + Capacitor sync
 ```
 
-Open http://localhost:3000
+App ID: `com.quietide.app`  
+Stack: Next.js 14 (static export) · TypeScript · Tailwind · Zustand · Web Audio · Capacitor 6
 
----
-
-## Current Features
-
-### Core
-- **Home** – Clean mode cards
-- **Breathe** – Box, 4-7-8, Coherent visual pacer
-- **Stress SOS** – Auto-starts 90-second Box breathing reset
-- **Focus** – Work / break timer with session logging
-- **Sleep** – Timer (15–120 min) + multi-layer soundscape + automatic fade-out in the last 30 s
-
-### Sound Mixer
-- Independent volume for each layer (Brown / Pink noise, Rain, Ocean, Forest, Wind)
-- Synthesized with Web Audio API (fully offline)
-- Ready for real MP3 drop-in later
-
-### Other
-- Sleep timer with fade-out
-- Haptics helper for breathe phases (Capacitor)
-- Onboarding (3 steps)
-- Session history + total minutes
-- JSON export of sessions
-- PWA (manifest + service worker)
-- Capacitor 6 ready (iOS / Android)
-
----
-
-## Stack
-
-- Next.js 14 (App Router) + TypeScript
-- Tailwind CSS
-- Zustand + persist
-- Web Audio API
-- Capacitor 6
-- Static export (`output: "export"`)
-
----
-
-## Capacitor
-
-```bash
-npm run build
-npx cap add ios
-npx cap add android
-npx cap sync
-npx cap open ios   # or android
-```
-
-App ID: `com.quietide.app`
+Docs: [docs/ANDROID.md](docs/ANDROID.md) · [docs/ANDROID_APK_CI.md](docs/ANDROID_APK_CI.md) · [docs/PLAY_STORE.md](docs/PLAY_STORE.md)
 
 ---
 
 ## Privacy
 
-Everything stays on device. No accounts, no analytics, no cloud sync.
+Everything stays on device. No accounts, no analytics, no session cloud sync.  
+Policy: https://quietide.vercel.app/privacy/
